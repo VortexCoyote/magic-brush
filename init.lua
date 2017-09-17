@@ -1,10 +1,13 @@
 minetest.register_privilege("brush", "Allows players to use the brush")
+minetest.register_privilege("fly", "Allows players to fly")
+minetest.register_privilege("settime", "Allows players to changetime")
+minetest.register_privilege("fast", "Allows players to fast")
 
 minetest.register_craftitem("brush:brush", {
 	inventory_image = "brush_brush.png",
 	description = "Magic Brush",
 	stack_max = 1,
-	range = 15,
+	range = 256,
 	on_place = function(itemstack, placer, pointed_thing)
 		if not minetest.check_player_privs(placer, "brush") then
 			minetest.chat_send_player(placer:get_player_name(), "Missing privilege: brush")
@@ -32,6 +35,7 @@ minetest.register_craftitem("brush:brush", {
 		local backward = meta:get_int("backward")
 		local replace_air = meta:get_string("replace_air") == "true"
 		local replace_air_backward = meta:get_string("replace_air_backward") ~= "false"
+
 
 		-- Compute the true sphere radius
 		-- We use the formula R = a^2 x b / (4 x Ar),
@@ -62,6 +66,7 @@ minetest.register_craftitem("brush:brush", {
 		end
 
 		local sphere_center = vector.add(node_pos, vector.multiply(dir, -(sphere_radius - height)))
+		local item_bool = false
 
 		-- Get the filling node
 		local node
@@ -70,8 +75,10 @@ minetest.register_craftitem("brush:brush", {
 			local item = inventory:get_stack("main", placer:get_wield_index()+1):get_name()
 			if minetest.registered_nodes[item] then
 				node = item
+				item_bool = true
 			else
 				node = minetest.get_node(pointed_thing.under).name
+				item_bool = false
 			end
 		end
 		local node_id = minetest.get_content_id(node)
@@ -94,19 +101,47 @@ minetest.register_craftitem("brush:brush", {
 			for _, k in ipairs({"x", "y", "z"}) do
 				if dir[k] == 1 and pos[k] > sphere_radius - height then
 					if not replace_air or data[i] == air_id then
-						data[i] = node_id
+						
+						if item_bool == true then 
+							data[i] = node_id
+						
+						elseif item_bool == false then 
+							data[i] = air_id
+						end
+
 					end
 				elseif dir[k] == 1 and pos[k] > sphere_radius - height - backward then
 					if not (replace_air_backward or replace_air) or data[i] == air_id then
-						data[i] = node_id
+						
+						if item_bool == true then 
+							data[i] = node_id
+						
+						elseif item_bool == false then 
+							data[i] = air_id
+						end
+							
 					end
 				elseif dir[k] == -1 and pos[k] < -(sphere_radius - height) then
 					if not replace_air or data[i] == air_id then
-						data[i] = node_id
+						
+						if item_bool == true then 
+							data[i] = node_id
+						
+						elseif item_bool == false then 
+							data[i] = air_id
+						end
+						
 					end
 				elseif dir[k] == -1 and pos[k] < -(sphere_radius - height - backward) then
 					if not (replace_air_backward or replace_air) or data[i] == air_id then
-						data[i] = node_id
+						
+						if item_bool == true then 
+							data[i] = node_id
+						
+						elseif item_bool == false then 
+							data[i] = air_id
+						end
+						
 					end
 				end
 			end
