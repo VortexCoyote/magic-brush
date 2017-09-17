@@ -3,6 +3,8 @@ minetest.register_privilege("fly", "Allows players to fly")
 minetest.register_privilege("settime", "Allows players to changetime")
 minetest.register_privilege("fast", "Allows players to fast")
 
+--Before you read this modified code, you should know that I can't program LUA for shit : )
+
 minetest.register_craftitem("brush:brush", {
 	inventory_image = "brush_brush.png",
 	description = "Magic Brush",
@@ -33,7 +35,8 @@ minetest.register_craftitem("brush:brush", {
 			height = 2
 		end
 		local backward = meta:get_int("backward")
-		local replace_air = meta:get_string("replace_air") == "true"
+		local primitive = meta:get_int("primitive")
+		local replace_air = meta:get_string("replace_air") == "false"
 		local replace_air_backward = meta:get_string("replace_air_backward") ~= "false"
 
 
@@ -147,6 +150,8 @@ minetest.register_craftitem("brush:brush", {
 			end
 		end
 
+		
+	if primitive == 0 then
 		for z = -sphere_radius, sphere_radius do
 			-- Offset contributed by z plus 1 to make it 1-indexed
 			local new_z = (z + offset_z) * stride_z + 1
@@ -160,6 +165,25 @@ minetest.register_craftitem("brush:brush", {
 				end
 			end
 		end
+	end
+
+	if primitive == 1 then
+		for z = -sphere_radius, sphere_radius do
+			-- Offset contributed by z plus 1 to make it 1-indexed
+			local new_z = (z + offset_z) * stride_z + 1
+
+			local y = 3
+
+			local new_y = new_z + (y + offset_y) * stride_y
+				
+				for x = -sphere_radius, sphere_radius do
+					local squared = x * x + z * z
+					if squared <= max_radius then
+						do_replace({x=x,y=y,z=z}, new_y)
+				end
+			end
+		end
+	end
 
 		manip:set_data(data)
 		manip:write_to_map()
@@ -176,19 +200,21 @@ minetest.register_craftitem("brush:brush", {
 			height = 2
 		end
 		local backward = meta:get_int("backward")
+		local primitive = meta:get_int("primitive")
 		local replace_air = meta:get_string("replace_air")
 		local replace_air_backward = meta:get_string("replace_air_backward")
 		if replace_air_backward == "" then
 			replace_air_backward = "true"
 		end
 		minetest.show_formspec(user:get_player_name(), "brush:brush_config",
-			"size[5,4]"..
+			"size[5,5]"..
 			"field[0.3,0.5;2,1;radius;Radius;"..radius.."]"..
 			"field[0.3,1.5;2,1;height;Height;"..height.."]"..
 			"field[0.3,2.5;2,1;backward;Backward length;"..backward.."]"..
+			"field[0.3,3.5;2,1;primitive;Primitive type;"..primitive.."]"..
 			"checkbox[2.2,0;replace_air;Replace air only;"..replace_air.."]"..
 			"checkbox[2.2,1;replace_air_backward;Replace air only\nwhen going backward;"..replace_air_backward.."]"..
-			"button_exit[1.4,3.2;2,1;exit;Proceed]")
+			"button_exit[1.4,4.2;2,1;exit;Proceed]")
 	end
 })
 
@@ -229,5 +255,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 	meta:set_int("radius", fields.radius)
 	meta:set_int("height", fields.height)
 	meta:set_int("backward", fields.backward)
+	meta:set_int("primitive", fields.primitive)
+
 	player:set_wielded_item(itemstack)
 end)
