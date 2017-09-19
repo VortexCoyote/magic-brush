@@ -185,6 +185,36 @@ minetest.register_craftitem("brush:brush", {
 		end
 	end
 
+	if primitive == 2 then
+		for z = -sphere_radius, sphere_radius do
+			-- Offset contributed by z plus 1 to make it 1-indexed
+			local new_z = (z + offset_z) * stride_z + 1
+			for y = -sphere_radius, sphere_radius do
+				local new_y = new_z + (y + offset_y) * stride_y
+				for x = -sphere_radius, sphere_radius do
+						do_replace({x=x,y=y,z=z}, new_y)
+				end
+			end
+		end
+	end
+
+	if primitive == 3 then
+		for z = -sphere_radius, sphere_radius do
+			-- Offset contributed by z plus 1 to make it 1-indexed
+			local new_z = (z + offset_z) * stride_z + 1
+			for y = -sphere_radius, sphere_radius do
+				local new_y = new_z + (y + offset_y) * stride_y
+				for x = -sphere_radius, sphere_radius do
+					local squared = x * x + z * z
+					if squared <= max_radius then
+						do_replace({x=x,y=y,z=z}, new_y)
+					end
+				end
+			end
+		end
+	end
+
+
 		manip:set_data(data)
 		manip:write_to_map()
 	end,
